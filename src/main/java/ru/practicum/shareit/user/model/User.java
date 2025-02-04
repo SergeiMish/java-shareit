@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.user.model;
 
 import lombok.*;
 
@@ -9,8 +9,8 @@ import lombok.*;
 @Getter
 @Setter
 @EqualsAndHashCode
-public class Item {
+public class User {
     private Long id;
-    private Long userId;
-    private String url;
+    private String email;
+    private String name;
 }
