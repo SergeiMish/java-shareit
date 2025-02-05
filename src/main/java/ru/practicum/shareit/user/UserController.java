@@ -49,6 +49,7 @@ public class UserController {
             userService.delete(user);
         }
     }
+
     @PatchMapping("/{id}")
     public UserDto patchUser(@PathVariable Long id, @RequestBody UserDto userDto) {
         User userToUpdate = UserDtoMapper.toUser(userDto);

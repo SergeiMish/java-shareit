@@ -15,12 +15,12 @@ public class UserRepositoryImp implements UserRepository {
     private long idCounter = 0;
 
     @Override
-    public synchronized List<User> findAll() {
+    public List<User> findAll() {
         return new ArrayList<>(userRepository.values());
     }
 
     @Override
-    public synchronized User save(User user) {
+    public User save(User user) {
         if (user.getId() == null) {
             user.setId(generateId());
         }
@@ -29,23 +29,28 @@ public class UserRepositoryImp implements UserRepository {
     }
 
     @Override
-    public synchronized void deleteById(Long id) {
+    public void deleteById(Long id) {
         userRepository.remove(id);
     }
 
     @Override
-    public synchronized User findById(Long id) {
+    public User findById(Long id) {
         return userRepository.get(id);
     }
 
     @Override
-    public synchronized Optional<User> findByEmail(String email) {
+    public Optional<User> findByEmail(String email) {
         return userRepository.values().stream()
                 .filter(user -> email.equals(user.getEmail()))
                 .findFirst();
     }
 
-    private synchronized long generateId() {
+    @Override
+    public boolean existsById(Long id) {
+        return userRepository.containsKey(id);
+    }
+
+    private long generateId() {
         return ++idCounter;
     }
 }
