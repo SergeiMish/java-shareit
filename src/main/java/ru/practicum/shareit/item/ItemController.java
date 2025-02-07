@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.constants.Constants;
 import ru.practicum.shareit.item.dto.ItemDto;
 
 import java.util.List;
@@ -23,15 +24,17 @@ public class ItemController {
 
     @PostMapping
     public ResponseEntity<ItemDto> addItem(
-            @RequestHeader("X-Sharer-User-Id") Long userId,
+            @RequestHeader(Constants.HEADER_USER_ID) Long userId,
             @Valid @RequestBody ItemDto itemDto) {
         ItemDto createdItem = itemService.addItem(userId, itemDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdItem);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItem(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long itemId, @RequestBody ItemDto itemDto) {
-        return itemService.updateItem(userId, itemId, itemDto);
+    public ResponseEntity<ItemDto> updateItem(@RequestHeader(Constants.HEADER_USER_ID) Long userId, @PathVariable Long itemId, @RequestBody ItemDto itemDto) {
+        itemDto.setId(itemId);
+        ItemDto updatedItem = itemService.updateItem(userId, itemDto);
+        return ResponseEntity.ok(updatedItem);
     }
 
     @GetMapping("/{itemId}")
@@ -40,7 +43,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getUserItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public List<ItemDto> getUserItems(@RequestHeader(Constants.HEADER_USER_ID) Long userId) {
         return itemService.getUserItems(userId);
     }
 

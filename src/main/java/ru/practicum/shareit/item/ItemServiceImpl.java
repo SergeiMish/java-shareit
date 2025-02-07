@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exeption.AccessDeniedException;
 import ru.practicum.shareit.exeption.ItemNotFoundException;
@@ -12,16 +13,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
 
-
-    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository) {
-        this.itemRepository = itemRepository;
-        this.userRepository = userRepository;
-    }
 
     @Override
     public ItemDto addItem(Long userId, ItemDto itemDto) {
@@ -42,7 +39,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto updateItem(Long userId, Long itemId, ItemDto itemDto) {
+    public ItemDto updateItem(Long userId, ItemDto itemDto) {
+        Long itemId = itemDto.getId();
         ItemDto existingItem = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException("Item not found"));
         if (!existingItem.getOwnerId().equals(userId)) {
