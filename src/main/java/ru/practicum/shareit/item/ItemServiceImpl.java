@@ -6,6 +6,8 @@ import ru.practicum.shareit.exeption.AccessDeniedException;
 import ru.practicum.shareit.exeption.ItemNotFoundException;
 import ru.practicum.shareit.exeption.UserNotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.mapper.ItemDtoMapper;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.util.Collections;
@@ -18,7 +20,6 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
-
 
     @Override
     public ItemDto addItem(Long userId, ItemDto itemDto) {
@@ -34,14 +35,16 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto.getDescription() == null || itemDto.getDescription().trim().isEmpty()) {
             throw new IllegalArgumentException("Description must be provided and cannot be empty");
         }
-        itemDto.setOwnerId(userId);
-        return itemRepository.save(itemDto);
+        Item item = ItemDtoMapper.toItem(itemDto);
+        item.setOwnerId(userId);
+        Item savedItem = itemRepository.save(item);
+        return ItemDtoMapper.toItemDto(savedItem);
     }
 
     @Override
     public ItemDto updateItem(Long userId, ItemDto itemDto) {
         Long itemId = itemDto.getId();
-        ItemDto existingItem = itemRepository.findById(itemId)
+        Item existingItem = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException("Item not found"));
         if (!existingItem.getOwnerId().equals(userId)) {
             throw new AccessDeniedException("User is not the owner");
@@ -55,18 +58,22 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto.getAvailable() != null) {
             existingItem.setAvailable(itemDto.getAvailable());
         }
-        return itemRepository.save(existingItem);
+        Item updatedItem = itemRepository.save(existingItem);
+        return ItemDtoMapper.toItemDto(updatedItem);
     }
 
     @Override
     public ItemDto getItem(Long itemId) {
-        return itemRepository.findById(itemId)
+        Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new IllegalArgumentException("Item not found"));
+        return ItemDtoMapper.toItemDto(item);
     }
 
     @Override
     public List<ItemDto> getUserItems(Long userId) {
-        return itemRepository.findByOwnerId(userId);
+        return itemRepository.findByOwnerId(userId).stream()
+                .map(ItemDtoMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -80,6 +87,7 @@ public class ItemServiceImpl implements ItemService {
                 .filter(item -> Boolean.TRUE.equals(item.getAvailable()) &&
                         ((item.getName() != null && item.getName().toLowerCase().contains(lowerCaseText)) ||
                                 (item.getDescription() != null && item.getDescription().toLowerCase().contains(lowerCaseText))))
+                .map(ItemDtoMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 }

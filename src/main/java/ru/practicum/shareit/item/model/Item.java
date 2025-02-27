@@ -1,10 +1,7 @@
 package ru.practicum.shareit.item.model;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 /**
  * TODO Sprint add-controllers.
@@ -15,6 +12,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @EqualsAndHashCode
+@NoArgsConstructor
+@AllArgsConstructor
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,11 +24,8 @@ public class Item {
     private String description;
 
     @Column(name = "available")
-    private boolean available;
+    private Boolean available;
 
     @Column(name = "owner_id")
     private Long ownerId;
-
-    public Item() {
-    }
 }
