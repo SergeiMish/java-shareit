@@ -15,3 +15,14 @@ CREATE TABLE IF NOT EXISTS item (
                                     CONSTRAINT pk_item PRIMARY KEY (id),
                                     CONSTRAINT fk_item_owner FOREIGN KEY (owner_id) REFERENCES users(id)
 );
+
+CREATE TABLE IF NOT EXISTS bookings (
+                          id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                          item_id BIGINT NOT NULL,
+                          booker_id BIGINT NOT NULL,
+                          start_date TIMESTAMP NOT NULL,
+                          end_date TIMESTAMP NOT NULL,
+                          status VARCHAR(10) NOT NULL,
+                          FOREIGN KEY (item_id) REFERENCES item(id),
+                          FOREIGN KEY (booker_id) REFERENCES users(id)
+);
