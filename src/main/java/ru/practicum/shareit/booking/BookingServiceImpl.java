@@ -2,15 +2,13 @@ package ru.practicum.shareit.booking;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.mapper.BookingDtoMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.exeption.AccessDeniedException;
-import ru.practicum.shareit.exeption.BookingNotFoundException;
-import ru.practicum.shareit.exeption.ItemNotFoundException;
-import ru.practicum.shareit.exeption.UserNotFoundException;
+import ru.practicum.shareit.exeption.*;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
@@ -23,6 +21,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
@@ -33,8 +32,17 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto addBooking(Long userId, BookingDto bookingDto) {
         User booker = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
+
         Item item = itemRepository.findById(bookingDto.getItemId())
                 .orElseThrow(() -> new ItemNotFoundException("Item not found"));
+
+        if (!item.isAvailable()) {
+            throw new ItemUnavailableException("Item is not available for booking");
+        }
+
+        if (bookingDto.getStart() == null || bookingDto.getEnd() == null) {
+            throw new IllegalArgumentException("Start and end dates must be provided");
+        }
 
         Booking booking = Booking.builder()
                 .item(item)
@@ -45,15 +53,16 @@ public class BookingServiceImpl implements BookingService {
                 .build();
 
         Booking savedBooking = bookingRepository.save(booking);
+
         return BookingDtoMapper.toDto(savedBooking);
     }
 
     @Override
-    public BookingDto updateBookingStatus(Long bookingId, boolean approved) {
+    public BookingDto updateBookingStatus(Long bookingId, boolean approved, Long userId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
 
-        if (!booking.getItem().getOwner().getId().equals(booking.getBooker().getId())) {
+        if (!booking.getItem().getOwner().getId().equals(userId)) {
             throw new AccessDeniedException("User is not the owner");
         }
 
@@ -78,6 +87,11 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingDto> getOwnerBookings(Long ownerId, String state) {
         List<Booking> bookings = bookingRepository.findBookingsByOwnerId(ownerId);
+
+        if (bookings.isEmpty()) {
+            throw new BookingNotFoundException("No bookings found for the given owner");
+        }
+
         return filterBookingsByState(bookings, state);
     }
 

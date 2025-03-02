@@ -25,10 +25,7 @@ public class Item {
     private String description;
 
     @Column(name = "available")
-    private Boolean available;
-
-    @Column(name = "owner_id", insertable = false, updatable = false)
-    private Long ownerId;
+    private boolean available;
 
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
