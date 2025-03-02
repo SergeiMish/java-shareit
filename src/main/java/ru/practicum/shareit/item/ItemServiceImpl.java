@@ -81,7 +81,6 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new IllegalArgumentException("Item not found"));
 
-        // Проверка, является ли пользователь владельцем
         boolean isOwner = item.getOwner().getId().equals(userId);
 
         Optional<Booking> lastBookingOpt = isOwner ? bookingRepository.findLastBookingByItemId(item.getId()) : Optional.empty();
