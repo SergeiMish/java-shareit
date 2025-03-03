@@ -2,6 +2,8 @@ package ru.practicum.shareit.item;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.mapper.BookingDtoMapper;
@@ -21,6 +23,7 @@ import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,6 +33,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class ItemServiceImpl implements ItemService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ItemServiceImpl.class);
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
@@ -109,12 +113,17 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getUserItems(Long userId) {
-        return itemRepository.findByOwnerId(userId).stream()
+        return itemRepository.findItemsWithBookingsAndCommentsByOwnerId(userId).stream()
                 .map(item -> {
-                    Optional<Booking> lastBookingOpt = bookingRepository.findLastBookingByItemId(item.getId());
-                    Optional<Booking> nextBookingOpt = bookingRepository.findNextBookingByItemId(item.getId());
-                    List<Comment> comments = commentRepository.findByItemId(item.getId());
-                    List<CommentDto> commentDtos = comments.stream()
+                    Optional<Booking> lastBookingOpt = item.getBookings().stream()
+                            .filter(booking -> booking.getEnd().isBefore(LocalDateTime.now()))
+                            .max(Comparator.comparing(Booking::getEnd));
+
+                    Optional<Booking> nextBookingOpt = item.getBookings().stream()
+                            .filter(booking -> booking.getStart().isAfter(LocalDateTime.now()))
+                            .min(Comparator.comparing(Booking::getStart));
+
+                    List<CommentDto> commentDtos = item.getComments().stream()
                             .map(CommentDtoMapper::toDto)
                             .collect(Collectors.toList());
 
@@ -158,9 +167,9 @@ public class ItemServiceImpl implements ItemService {
                         booking.getStatus() == BookingStatus.APPROVED &&
                         booking.getEnd().isBefore(LocalDateTime.now()));
 
-        System.out.println("Checking booking for itemId: " + itemId + ", userId: " + userId + ", status: APPROVED and completed");
+        logger.info("Checking booking for itemId: {}, userId: {}, status: APPROVED and completed", itemId, userId);
         if (!isApprovedAndCompleted) {
-            System.out.println("User has not booked this item with APPROVED status or the booking is not completed");
+            logger.warn("User has not booked this item with APPROVED status or the booking is not completed");
             throw new IllegalArgumentException("User has not booked this item with APPROVED status or the booking is not completed");
         }
 

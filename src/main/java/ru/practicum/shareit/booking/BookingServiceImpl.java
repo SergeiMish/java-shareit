@@ -57,13 +57,16 @@ public class BookingServiceImpl implements BookingService {
         return BookingDtoMapper.toDto(savedBooking);
     }
 
-    @Override
     public BookingDto updateBookingStatus(Long bookingId, boolean approved, Long userId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
 
         if (!booking.getItem().getOwner().getId().equals(userId)) {
             throw new AccessDeniedException("User is not the owner");
+        }
+
+        if (booking.getStatus() == BookingStatus.APPROVED || booking.getStatus() == BookingStatus.REJECTED) {
+            throw new IllegalStateException("Booking status cannot be changed once it is approved or rejected");
         }
 
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);

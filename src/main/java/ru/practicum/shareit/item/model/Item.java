@@ -2,7 +2,11 @@ package ru.practicum.shareit.item.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.user.model.User;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * TODO Sprint add-controllers.
@@ -30,4 +34,10 @@ public class Item {
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
+
+    @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
+    private Set<Booking> bookings;
+
+    @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
+    private Set<Comment> comments;
 }
