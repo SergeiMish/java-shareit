@@ -1,18 +1,18 @@
 package ru.practicum.shareit.item;
 
-import ru.practicum.shareit.item.dto.ItemDto;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
-import java.util.Optional;
 
-public interface ItemRepository {
-    ItemDto save(ItemDto item);
+public interface ItemRepository extends JpaRepository<Item, Long> {
+    List<Item> findByOwnerId(Long ownerId);
 
-    Optional<ItemDto> findById(Long id);
-
-    List<ItemDto> findAll();
-
-    void deleteById(Long id);
-
-    List<ItemDto> findByOwnerId(Long ownerId);
+    @Query("SELECT i FROM Item i " +
+            "LEFT JOIN FETCH i.bookings b " +
+            "LEFT JOIN FETCH i.comments c " +
+            "WHERE i.owner.id = :userId")
+    List<Item> findItemsWithBookingsAndCommentsByOwnerId(@Param("userId") Long userId);
 }

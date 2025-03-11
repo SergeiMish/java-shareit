@@ -34,19 +34,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User get(Long id) {
-        User user = userRepository.findById(id);
-        if (user == null) {
-            throw new IllegalArgumentException("User not found");
-        }
-        return user;
+        return userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
     @Override
     public User update(Long id, User updatedUser) {
-        User existingUser = userRepository.findById(id);
-        if (existingUser == null) {
-            throw new IllegalArgumentException("User not found");
-        }
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (updatedUser.getEmail() != null && !updatedUser.getEmail().equals(existingUser.getEmail())) {
             if (isEmailTaken(updatedUser.getEmail())) {
