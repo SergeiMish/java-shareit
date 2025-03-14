@@ -1,9 +1,11 @@
 package ru.practicum.shareit.item;
 
+import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.mapper.BookingDtoMapper;
@@ -11,6 +13,7 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.exeption.AccessDeniedException;
 import ru.practicum.shareit.exeption.ItemNotFoundException;
+import ru.practicum.shareit.exeption.RequestNotFoundException;
 import ru.practicum.shareit.exeption.UserNotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -18,6 +21,9 @@ import ru.practicum.shareit.item.dto.mapper.CommentDtoMapper;
 import ru.practicum.shareit.item.dto.mapper.ItemDtoMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequestRepository;
+
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -38,24 +44,51 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
-    public ItemDto addItem(Long userId, ItemDto itemDto) {
+    public ItemDto addItem(Long userId, ItemDto itemDto, @Nullable Long requestId) {
+        logger.info("Начало метода addItem");
+
+        // Находим пользователя
+        logger.info("Поиск пользователя с ID: {}", userId);
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (itemDto.getAvailable() == null) {
-            throw new IllegalArgumentException("Available status must be provided");
-        }
-        if (itemDto.getName() == null || itemDto.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Name must be provided and cannot be empty");
-        }
-        if (itemDto.getDescription() == null || itemDto.getDescription().trim().isEmpty()) {
-            throw new IllegalArgumentException("Description must be provided and cannot be empty");
+        // Валидация
+        logger.info("Валидация ItemDto");
+        validateItemDto(itemDto);
+
+        // Получаем запрос, если он указан
+        ItemRequest request = null;
+        if (requestId != null) {
+            logger.info("Поиск запроса с ID: {}", requestId);
+            request = itemRequestRepository.findById(requestId)
+                    .orElseThrow(() -> new RequestNotFoundException("Request not found"));
         }
 
-        Item item = ItemDtoMapper.toItem(itemDto, owner);
+        // Создаем предмет
+        logger.info("Создание Item из ItemDto");
+        Item item = ItemDtoMapper.toItem(itemDto, owner, request);
+
+        // Устанавливаем связь с запросом
+        if (request != null) {
+            item.setRequest(request);
+            request.getItems().add(item); // Добавляем предмет в список предметов запроса
+        }
+
+        // Сохраняем предмет
+        logger.info("Сохранение Item в базе данных");
         Item savedItem = itemRepository.save(item);
+
+        // Обновляем имя предмета в запросе
+        if (request != null) {
+            logger.info("Обновление ITEM_NAME в ItemRequest");
+            request.setItemName(savedItem.getName());
+            itemRequestRepository.save(request);
+        }
+
+        logger.info("Завершение метода addItem");
         return ItemDtoMapper.toItemDto(savedItem);
     }
 
@@ -176,5 +209,17 @@ public class ItemServiceImpl implements ItemService {
         Comment comment = CommentDtoMapper.toEntity(commentDto, item, user);
         Comment savedComment = commentRepository.save(comment);
         return CommentDtoMapper.toDto(savedComment);
+    }
+
+    private void validateItemDto(ItemDto itemDto) {
+        if (itemDto.getAvailable() == null) {
+            throw new IllegalArgumentException("Available status must be provided");
+        }
+        if (itemDto.getName() == null || itemDto.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Name must be provided and cannot be empty");
+        }
+        if (itemDto.getDescription() == null || itemDto.getDescription().trim().isEmpty()) {
+            throw new IllegalArgumentException("Description must be provided and cannot be empty");
+        }
     }
 }

@@ -19,15 +19,11 @@ import java.util.List;
 @EqualsAndHashCode
 public class ItemDto {
     private Long id;
-    @NotEmpty(message = "Name must be provided and cannot be empty")
     private String name;
-
-    @NotEmpty(message = "Description must be provided and cannot be empty")
     private String description;
-
-    @NotNull(message = "Available status must be provided")
     private Boolean available;
     private Long ownerId;
+    private Long requestId;
     private BookingDto lastBooking;
     private BookingDto nextBooking;
     private List<CommentDto> comments;

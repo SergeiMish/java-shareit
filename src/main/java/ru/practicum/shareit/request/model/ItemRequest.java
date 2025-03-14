@@ -1,4 +1,4 @@
-package ru.practicum.shareit.request;
+package ru.practicum.shareit.request.model;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -6,34 +6,39 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * TODO Sprint add-item-requests.
  */
 @Entity
-@Table(name = "item_request")
-@Builder
+@Table(name = "requests")
 @Getter
 @Setter
-@EqualsAndHashCode
 @NoArgsConstructor
+@Builder
 @AllArgsConstructor
 public class ItemRequest {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "item_name", nullable = true)
+    private String itemName;
+
+    @Column(name = "description")
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "created")
     private LocalDateTime created;
 
     @ManyToOne
-    @JoinColumn(name = "requester_id", nullable = false)
+    @JoinColumn(name = "requester_id")
     private User requester;
 
-    @OneToMany(mappedBy = "request", fetch = FetchType.LAZY)
-    private Set<Item> items;
+    @OneToMany(mappedBy = "request", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    private List<Item> items = new ArrayList<>();
 }

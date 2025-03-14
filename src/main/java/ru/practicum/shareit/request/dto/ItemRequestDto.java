@@ -1,25 +1,21 @@
 package ru.practicum.shareit.request.dto;
 
-import jakarta.validation.constraints.NotEmpty;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
-
-/**
- * TODO Sprint add-item-requests.
- */
+import java.util.List;
 
 @Builder
 @Getter
 @Setter
 @EqualsAndHashCode
-public class ItemRequestDto {
+@NoArgsConstructor
+@AllArgsConstructor
+    public class ItemRequestDto {
     private Long id;
-    @NotEmpty(message = "Description must be provided and cannot be empty")
+    private String itemName;
     private String description;
     private LocalDateTime created;
-    private List<ItemResponse> items;
+    private List<ItemResponseDto> items;
+    private Long requesterId;
 }

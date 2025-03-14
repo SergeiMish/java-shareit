@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findByOwnerId(Long ownerId);
@@ -15,4 +16,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "LEFT JOIN FETCH i.comments c " +
             "WHERE i.owner.id = :userId")
     List<Item> findItemsWithBookingsAndCommentsByOwnerId(@Param("userId") Long userId);
+
+    Optional<Item> findById(Long id);
+    List<Item> findByRequestId(Long requestId);
 }
