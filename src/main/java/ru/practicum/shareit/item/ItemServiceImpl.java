@@ -48,7 +48,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto addItem(Long userId, ItemDto itemDto, @Nullable Long requestId) {
-        logger.info("Начало метода addItem");
+        logger.info("Начало метода addItem. Параметры: userId={}, requestId={}, itemDto={}",
+                userId, requestId, itemDto);
 
         // Находим пользователя
         logger.info("Поиск пользователя с ID: {}", userId);
@@ -56,39 +57,53 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         // Валидация
-        logger.info("Валидация ItemDto");
+        logger.info("Валидация ItemDto: {}", itemDto);
         validateItemDto(itemDto);
 
-        // Получаем запрос, если он указан
-        ItemRequest request = null;
+        // Получаем или создаем запрос
+        ItemRequest request;
         if (requestId != null) {
             logger.info("Поиск запроса с ID: {}", requestId);
             request = itemRequestRepository.findById(requestId)
                     .orElseThrow(() -> new RequestNotFoundException("Request not found"));
+            logger.info("Найденный запрос: {}", request);
+        } else {
+            // Создаем новый запрос, если requestId не указан
+            logger.info("Создание нового запроса для пользователя");
+            request = new ItemRequest();
+            request.setRequester(owner);
+            request.setDescription(itemDto.getDescription());
+            request.setCreated(LocalDateTime.now());
+            request = itemRequestRepository.save(request);
+            logger.info("Создан новый запрос: {}", request);
         }
 
         // Создаем предмет
-        logger.info("Создание Item из ItemDto");
-        Item item = ItemDtoMapper.toItem(itemDto, owner, request);
+        logger.info("Создание Item из ItemDto: {}", itemDto);
+        Item item = new Item();
+        item.setName(itemDto.getName());
+        item.setDescription(itemDto.getDescription());
+        item.setAvailable(itemDto.getAvailable()); // <--- ВАЖНОЕ ИЗМЕНЕНИЕ
+        item.setOwner(owner);
+        logger.info("Создан предмет: {}", item);
 
-        // Устанавливаем связь с запросом
-        if (request != null) {
-            item.setRequest(request);
-            request.getItems().add(item); // Добавляем предмет в список предметов запроса
-        }
+        // Устанавливаем связи
+        item.setRequest(request);
+        request.getItems().add(item);
+        logger.info("Установлены связи между предметом и запросом");
 
         // Сохраняем предмет
-        logger.info("Сохранение Item в базе данных");
+        logger.info("Сохранение Item в базе данных: {}", item);
         Item savedItem = itemRepository.save(item);
+        logger.info("Сохраненный предмет: {}", savedItem);
 
         // Обновляем имя предмета в запросе
-        if (request != null) {
-            logger.info("Обновление ITEM_NAME в ItemRequest");
-            request.setItemName(savedItem.getName());
-            itemRequestRepository.save(request);
-        }
+        logger.info("Обновление ITEM_NAME в ItemRequest");
+        request.setItemName(savedItem.getName());
+        itemRequestRepository.save(request);
+        logger.info("Обновленный запрос: {}", request);
 
-        logger.info("Завершение метода addItem");
+        logger.info("Завершение метода addItem. Результат: {}", savedItem);
         return ItemDtoMapper.toItemDto(savedItem);
     }
 

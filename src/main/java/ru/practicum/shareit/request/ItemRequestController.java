@@ -15,6 +15,7 @@ import ru.practicum.shareit.exeption.RequestNotFoundException;
 import ru.practicum.shareit.item.constants.Constants;
 import ru.practicum.shareit.request.dto.ItemRequestCreateDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.request.dto.SimpleRequestDto;
 import ru.practicum.shareit.request.mapper.ItemRequestMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
 
@@ -33,6 +34,7 @@ public class ItemRequestController {
     private final ItemRequestService itemRequestService;
 
     private final ItemRequestRepository itemRequestRepository;
+    private final SimpleRequestService simpleRequestService;
 
     @PostMapping
     public ResponseEntity<ItemRequestDto> createRequest(
@@ -43,9 +45,9 @@ public class ItemRequestController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ItemRequestDto>> getUserRequests(
+    public ResponseEntity<List<SimpleRequestDto>> getUserRequests(
             @RequestHeader(Constants.HEADER_USER_ID) Long userId) {
-        List<ItemRequestDto> requests = itemRequestService.getUserRequests(userId);
+        List<SimpleRequestDto> requests = simpleRequestService.getUserRequests(userId);
         return ResponseEntity.ok(requests);
     }
 
@@ -60,8 +62,14 @@ public class ItemRequestController {
     public ResponseEntity<ItemRequestDto> getRequestById(
             @PathVariable Long requestId,
             @RequestHeader(Constants.HEADER_USER_ID) Long userId) {
+
         ItemRequest request = itemRequestRepository.findByIdWithItems(requestId)
                 .orElseThrow(() -> new RequestNotFoundException("Request not found"));
+
+        // Добавляем проверку прав доступа
+        if (!request.getRequester().getId().equals(userId)) {
+            throw new AccessDeniedException("Access denied");
+        }
 
         return ResponseEntity.ok(ItemRequestMapper.toDto(request));
     }
