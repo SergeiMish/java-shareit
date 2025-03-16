@@ -13,64 +13,42 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.exeption.AccessDeniedException;
 import ru.practicum.shareit.exeption.RequestNotFoundException;
 import ru.practicum.shareit.item.constants.Constants;
-import ru.practicum.shareit.request.dto.ItemRequestCreateDto;
-import ru.practicum.shareit.request.dto.ItemRequestDto;
-import ru.practicum.shareit.request.dto.SimpleRequestDto;
+import ru.practicum.shareit.request.dto.*;
 import ru.practicum.shareit.request.mapper.ItemRequestMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * TODO Sprint add-item-requests.
  */
 @RestController
-@RequestMapping("/requests")
-@Validated
+@RequestMapping(path = "/requests")
 @RequiredArgsConstructor
 public class ItemRequestController {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final ItemRequestService itemRequestService;
 
-    private final ItemRequestRepository itemRequestRepository;
-    private final SimpleRequestService simpleRequestService;
-
     @PostMapping
-    public ResponseEntity<ItemRequestDto> createRequest(
-            @RequestHeader(Constants.HEADER_USER_ID) Long userId,
-            @RequestBody ItemRequestCreateDto requestDto) {
-        ItemRequestDto savedRequest = itemRequestService.createRequest(userId, requestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedRequest);
+    public ItemRequestDtoResponse create(@Valid @RequestBody ItemRequestDtoRequest dto, @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return itemRequestService.create(dto, userId);
     }
 
     @GetMapping
-    public ResponseEntity<List<SimpleRequestDto>> getUserRequests(
-            @RequestHeader(Constants.HEADER_USER_ID) Long userId) {
-        List<SimpleRequestDto> requests = simpleRequestService.getUserRequests(userId);
-        return ResponseEntity.ok(requests);
+    public List<ItemRequestDtoResponse> findUserRequests(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        return itemRequestService.findUserRequests(userId);
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<ItemRequestDto>> getAllRequests(
-            @RequestHeader(Constants.HEADER_USER_ID) Long userId) {
-        List<ItemRequestDto> requests = itemRequestService.getAllRequests(userId);
-        return ResponseEntity.ok(requests);
+    public List<ItemRequestDtoResponse> findAllRequests(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        return itemRequestService.findAllRequests(userId);
     }
 
     @GetMapping("/{requestId}")
-    public ResponseEntity<ItemRequestDto> getRequestById(
-            @PathVariable Long requestId,
-            @RequestHeader(Constants.HEADER_USER_ID) Long userId) {
-
-        ItemRequest request = itemRequestRepository.findByIdWithItems(requestId)
-                .orElseThrow(() -> new RequestNotFoundException("Request not found"));
-
-        // Добавляем проверку прав доступа
-        if (!request.getRequester().getId().equals(userId)) {
-            throw new AccessDeniedException("Access denied");
-        }
-
-        return ResponseEntity.ok(ItemRequestMapper.toDto(request));
+    public ItemRequestDtoResponse findRequestById(@PathVariable("requestId") Long requestId,
+                                                  @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return itemRequestService.findRequestById(requestId, userId);
     }
+
 }

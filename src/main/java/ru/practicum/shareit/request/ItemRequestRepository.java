@@ -13,16 +13,8 @@ import java.util.Optional;
 
 @Repository
 public interface ItemRequestRepository extends JpaRepository<ItemRequest, Long> {
+    List<ItemRequest> findAllByOwnerIdOrderByCreatedDesc(Long ownerId);
 
-    @Query("SELECT ir FROM ItemRequest ir LEFT JOIN FETCH ir.items " +
-            "WHERE ir.requester.id = :userId ORDER BY ir.created DESC")
-    List<ItemRequest> findByRequesterIdOrderByCreatedDesc(@Param("userId") Long userId);
+    List<ItemRequest> findByOwnerIdNotOrderByCreatedDesc(Long ownerId);
 
-    @Query("SELECT ir FROM ItemRequest ir LEFT JOIN FETCH ir.items " +
-            "WHERE ir.requester.id <> :userId ORDER BY ir.created DESC")
-    List<ItemRequest> findByRequesterIdNotOrderByCreatedDesc(@Param("userId") Long userId);
-
-    @Query("SELECT ir FROM ItemRequest ir LEFT JOIN FETCH ir.items " +
-            "WHERE ir.id = :requestId")
-    Optional<ItemRequest> findByIdWithItems(@Param("requestId") Long requestId);
 }

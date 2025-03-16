@@ -27,10 +27,9 @@ public class ItemController {
     @PostMapping
     public ResponseEntity<ItemDto> addItem(
             @RequestHeader(Constants.HEADER_USER_ID) Long userId,
-            @Valid @RequestBody ItemDto itemDto,
-            @RequestParam(required = false) Long requestId) {
+            @Valid @RequestBody ItemDto itemDto) {
 
-        ItemDto createdItem = itemService.addItem(userId, itemDto, requestId);
+        ItemDto createdItem = itemService.addItem(userId, itemDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdItem);
     }
 

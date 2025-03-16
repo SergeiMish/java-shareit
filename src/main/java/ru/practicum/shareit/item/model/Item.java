@@ -14,7 +14,7 @@ import java.util.Set;
  * TODO Sprint add-controllers.
  */
 @Entity
-@Table(name = "item")
+@Table(name = "items")
 @Builder
 @Getter
 @Setter

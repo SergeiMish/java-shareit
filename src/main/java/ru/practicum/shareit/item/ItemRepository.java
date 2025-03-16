@@ -18,5 +18,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findItemsWithBookingsAndCommentsByOwnerId(@Param("userId") Long userId);
 
     Optional<Item> findById(Long id);
-    List<Item> findByRequestId(Long requestId);
+    @Query("select i from Item as i where i.request.id in :requestIds")
+    List<Item> findAllByRequestId(@Param("requestIds") List<Long> requestIds);
 }

@@ -1,16 +1,16 @@
 package ru.practicum.shareit.request;
 
-import ru.practicum.shareit.request.dto.ItemRequestCreateDto;
-import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.request.dto.ItemRequestDtoRequest;
+import ru.practicum.shareit.request.dto.ItemRequestDtoResponse;
 
 import java.util.List;
 
 public interface ItemRequestService {
-    ItemRequestDto createRequest(Long userId, ItemRequestCreateDto requestDto);
+    ItemRequestDtoResponse create(ItemRequestDtoRequest dto, Long userId);
 
+    List<ItemRequestDtoResponse> findUserRequests(Long userId);
 
+    List<ItemRequestDtoResponse> findAllRequests(Long userId);
 
-    List<ItemRequestDto> getAllRequests(Long userId);
-
-    ItemRequestDto getRequestById(Long requestId);
+    ItemRequestDtoResponse findRequestById(Long requestId, Long userId);
 }

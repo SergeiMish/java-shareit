@@ -15,7 +15,7 @@ public class ItemDtoMapper {
                 .description(item.getDescription())
                 .available(item.isAvailable())
                 .ownerId(item.getOwner() != null ? item.getOwner().getId() : null)
-                .requestId(item.getRequest() != null ? item.getRequest().getId() : null) // Добавьте это, если нужно
+                .requestId(item.getRequest() != null ? item.getRequest().getId() : null)
                 .build();
     }
 

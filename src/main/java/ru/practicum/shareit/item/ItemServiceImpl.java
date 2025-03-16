@@ -1,7 +1,7 @@
 package ru.practicum.shareit.item;
 
 import jakarta.annotation.Nullable;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +19,7 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.mapper.CommentDtoMapper;
 import ru.practicum.shareit.item.dto.mapper.ItemDtoMapper;
+import ru.practicum.shareit.item.dto.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.ItemRequestRepository;
@@ -45,65 +46,29 @@ public class ItemServiceImpl implements ItemService {
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
     private final ItemRequestRepository itemRequestRepository;
-
-    @Override
-    public ItemDto addItem(Long userId, ItemDto itemDto, @Nullable Long requestId) {
-        logger.info("Начало метода addItem. Параметры: userId={}, requestId={}, itemDto={}",
-                userId, requestId, itemDto);
-
-        // Находим пользователя
+     @Override
+    public ItemDto addItem(Long userId, ItemDto itemDto) {
+        Long requestId = itemDto.getRequestId();
+        validateItemDto(itemDto);
         logger.info("Поиск пользователя с ID: {}", userId);
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        // Валидация
-        logger.info("Валидация ItemDto: {}", itemDto);
-        validateItemDto(itemDto);
-
-        // Получаем или создаем запрос
-        ItemRequest request;
+        ItemRequest request = null;
         if (requestId != null) {
             logger.info("Поиск запроса с ID: {}", requestId);
             request = itemRequestRepository.findById(requestId)
                     .orElseThrow(() -> new RequestNotFoundException("Request not found"));
-            logger.info("Найденный запрос: {}", request);
-        } else {
-            // Создаем новый запрос, если requestId не указан
-            logger.info("Создание нового запроса для пользователя");
-            request = new ItemRequest();
-            request.setRequester(owner);
-            request.setDescription(itemDto.getDescription());
-            request.setCreated(LocalDateTime.now());
-            request = itemRequestRepository.save(request);
-            logger.info("Создан новый запрос: {}", request);
         }
 
-        // Создаем предмет
-        logger.info("Создание Item из ItemDto: {}", itemDto);
         Item item = new Item();
+        item.setOwner(owner);
+        item.setRequest(request);
         item.setName(itemDto.getName());
         item.setDescription(itemDto.getDescription());
-        item.setAvailable(itemDto.getAvailable()); // <--- ВАЖНОЕ ИЗМЕНЕНИЕ
-        item.setOwner(owner);
-        logger.info("Создан предмет: {}", item);
+        item.setAvailable(itemDto.getAvailable());
 
-        // Устанавливаем связи
-        item.setRequest(request);
-        request.getItems().add(item);
-        logger.info("Установлены связи между предметом и запросом");
-
-        // Сохраняем предмет
-        logger.info("Сохранение Item в базе данных: {}", item);
         Item savedItem = itemRepository.save(item);
-        logger.info("Сохраненный предмет: {}", savedItem);
-
-        // Обновляем имя предмета в запросе
-        logger.info("Обновление ITEM_NAME в ItemRequest");
-        request.setItemName(savedItem.getName());
-        itemRequestRepository.save(request);
-        logger.info("Обновленный запрос: {}", request);
-
-        logger.info("Завершение метода addItem. Результат: {}", savedItem);
         return ItemDtoMapper.toItemDto(savedItem);
     }
 
