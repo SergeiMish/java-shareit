@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,25 +30,16 @@ public class ItemController {
         return itemClient.searchItems(text);
     }
 
-    @PostMapping("/{itemId}/comments")
+    @PostMapping("/{itemId}/comment")
     public ResponseEntity<Object> addComment(@PathVariable Long itemId,
                                              @RequestHeader(Constants.HEADER_USER_ID) Long userId,
-                                             @RequestBody CommentDto commentDto) {
+                                             @Valid @RequestBody CommentDto commentDto) {
         return itemClient.addComment(userId, itemId, commentDto);
     }
 
     @PostMapping
     public ResponseEntity<Object> addItem(@RequestHeader(Constants.HEADER_USER_ID) Long userId,
                                           @RequestBody ItemDto itemDto) {
-        if (itemDto.getAvailable() == null) {
-            throw new IllegalArgumentException("Available status must be provided");
-        }
-        if (itemDto.getName() == null || itemDto.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Name must be provided and cannot be empty");
-        }
-        if (itemDto.getDescription() == null || itemDto.getDescription().trim().isEmpty()) {
-            throw new IllegalArgumentException("Description must be provided and cannot be empty");
-        }
         return itemClient.addItem(userId, itemDto);
     }
 
