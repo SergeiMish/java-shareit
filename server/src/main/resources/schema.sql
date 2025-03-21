@@ -1,202 +1,190 @@
 CREATE TABLE IF NOT EXISTS users
 (
     id
-    BIGINT
-    GENERATED
-    BY
-    DEFAULT AS
-    IDENTITY
-    NOT
-    NULL,
+          BIGINT
+        GENERATED
+            BY
+            DEFAULT AS
+            IDENTITY
+                       NOT
+                           NULL,
     name
-    VARCHAR
-(
-    255
-) NOT NULL,
-    email VARCHAR
-(
-    512
-) NOT NULL,
+          VARCHAR(255) NOT NULL,
+    email VARCHAR(512) NOT NULL,
     CONSTRAINT pk_user PRIMARY KEY
-(
-    id
-),
+        (
+         id
+            ),
     CONSTRAINT UQ_USER_EMAIL UNIQUE
-(
-    email
-)
-    );
+        (
+         email
+            )
+);
 
 CREATE TABLE IF NOT EXISTS requests
 (
     id
-    INT
-    GENERATED
-    BY
-    DEFAULT AS
-    IDENTITY
-    PRIMARY
-    KEY,
+        INT
+        GENERATED
+            BY
+            DEFAULT AS
+            IDENTITY
+        PRIMARY
+            KEY,
     owner_id
-    INT
-    NOT
-    NULL,
+        INT
+        NOT
+            NULL,
     description
-    VARCHAR
-    NOT
-    NULL,
+        VARCHAR
+        NOT
+            NULL,
     created
-    TIMESTAMP
-    WITHOUT
-    TIME
-    ZONE
-    NOT
-    NULL,
+        TIMESTAMP
+            WITHOUT
+            TIME
+            ZONE
+        NOT
+            NULL,
     FOREIGN
-    KEY
-(
-    owner_id
-) REFERENCES users
-(
-    id
-) ON DELETE CASCADE
-    );
+        KEY
+        (
+         owner_id
+            ) REFERENCES users
+        (
+         id
+            ) ON DELETE CASCADE
+);
 
 CREATE TABLE IF NOT EXISTS items
 (
     id
-    INT
-    GENERATED
-    BY
-    DEFAULT AS
-    IDENTITY
-    PRIMARY
-    KEY,
+        INT
+        GENERATED
+            BY
+            DEFAULT AS
+            IDENTITY
+        PRIMARY
+            KEY,
     owner_id
-    INT
-    NOT
-    NULL,
+        INT
+        NOT
+            NULL,
     request_id
-    INT,
+        INT,
     name
-    VARCHAR
-    NOT
-    NULL,
+        VARCHAR
+        NOT
+            NULL,
     description
-    VARCHAR
-    NOT
-    NULL,
+        VARCHAR
+        NOT
+            NULL,
     available
-    BOOLEAN,
+        BOOLEAN,
     FOREIGN
-    KEY
-(
-    owner_id
-) REFERENCES users
-(
-    id
-) ON DELETE CASCADE,
+        KEY
+        (
+         owner_id
+            ) REFERENCES users
+        (
+         id
+            ) ON DELETE CASCADE,
     FOREIGN KEY
-(
-    request_id
-) REFERENCES requests
-(
-    id
-)
-  ON DELETE CASCADE
-    );
+        (
+         request_id
+            ) REFERENCES requests
+        (
+         id
+            )
+        ON DELETE CASCADE
+);
 
 CREATE TABLE IF NOT EXISTS bookings
 (
     id
-    BIGINT
-    GENERATED
-    BY
-    DEFAULT AS
-    IDENTITY
-    NOT
-    NULL,
+        BIGINT
+        GENERATED
+            BY
+            DEFAULT AS
+            IDENTITY
+                    NOT
+                        NULL,
     item_id
-    BIGINT
-    NOT
-    NULL,
+        BIGINT
+                    NOT
+                        NULL,
     booker_id
-    BIGINT
-    NOT
-    NULL,
+        BIGINT
+                    NOT
+                        NULL,
     start_date
-    TIMESTAMP
-    NOT
-    NULL,
+        TIMESTAMP
+                    NOT
+                        NULL,
     end_date
-    TIMESTAMP
-    NOT
-    NULL,
+        TIMESTAMP
+                    NOT
+                        NULL,
     status
-    VARCHAR
-(
-    10
-) NOT NULL,
+        VARCHAR(10) NOT NULL,
     CONSTRAINT pk_booking PRIMARY KEY
-(
-    id
-),
+        (
+         id
+            ),
     FOREIGN KEY
-(
-    item_id
-) REFERENCES items
-(
-    id
-),
+        (
+         item_id
+            ) REFERENCES items
+        (
+         id
+            ),
     FOREIGN KEY
-(
-    booker_id
-) REFERENCES users
-(
-    id
-)
-    );
+        (
+         booker_id
+            ) REFERENCES users
+        (
+         id
+            )
+);
 
 CREATE TABLE IF NOT EXISTS comments
 (
     id
-    BIGINT
-    GENERATED
-    BY
-    DEFAULT AS
-    IDENTITY
-    NOT
-    NULL,
+            BIGINT
+        GENERATED
+            BY
+            DEFAULT AS
+            IDENTITY
+                          NOT
+                              NULL,
     item_id
-    BIGINT
-    NOT
-    NULL,
+            BIGINT
+                          NOT
+                              NULL,
     user_id
-    BIGINT
-    NOT
-    NULL,
+            BIGINT
+                          NOT
+                              NULL,
     text
-    VARCHAR
-(
-    1000
-) NOT NULL,
-    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            VARCHAR(1000) NOT NULL,
+    created TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT pk_comment PRIMARY KEY
-(
-    id
-),
+        (
+         id
+            ),
     FOREIGN KEY
-(
-    item_id
-) REFERENCES items
-(
-    id
-),
+        (
+         item_id
+            ) REFERENCES items
+        (
+         id
+            ),
     FOREIGN KEY
-(
-    user_id
-) REFERENCES users
-(
-    id
-)
-    );
+        (
+         user_id
+            ) REFERENCES users
+        (
+         id
+            )
+);

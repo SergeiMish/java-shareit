@@ -1,14 +1,8 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
-@EqualsAndHashCode
-@Builder
+@Data
 public class CommentDto {
     String text;
 }
