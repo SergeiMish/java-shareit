@@ -37,7 +37,8 @@ public class Item {
     private User owner;
 
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private Set<Booking> bookings = new HashSet<>();;
+    private Set<Booking> bookings = new HashSet<>();
+    ;
 
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     private Set<Comment> comments = new HashSet<>();

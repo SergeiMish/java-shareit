@@ -1,20 +1,7 @@
 package ru.practicum.shareit.item;
 
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.hasSize;
-
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +11,21 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exeption.ItemNotFoundException;
 import ru.practicum.shareit.item.constants.Constants;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,19 +33,15 @@ import ru.practicum.shareit.item.dto.ItemDto;
 @Rollback
 class ItemControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockBean
-    private ItemService itemService;
-
     private final Long userId = 1L;
     private final Long itemId = 1L;
     private final String searchText = "test";
-
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @MockBean
+    private ItemService itemService;
     private ItemDto testItemDto;
     private CommentDto testCommentDto;
 
@@ -83,7 +73,8 @@ class ItemControllerTest {
                 .andExpect(status().isOk())
                 .andExpect((result -> {
                     String json = result.getResponse().getContentAsString();
-                    List<ItemDto> dtos = objectMapper.readValue(json, new TypeReference<List<ItemDto>>() {});
+                    List<ItemDto> dtos = objectMapper.readValue(json, new TypeReference<List<ItemDto>>() {
+                    });
                     if (dtos.isEmpty()) {
                         throw new AssertionError("Empty ItemDtoResponse list");
                     }
