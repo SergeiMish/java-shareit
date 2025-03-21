@@ -30,9 +30,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 @Transactional
 @Rollback
+@AutoConfigureMockMvc
 class BookingServiceImplTest {
 
     @Autowired
