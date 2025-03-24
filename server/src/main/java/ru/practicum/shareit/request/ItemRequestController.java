@@ -1,6 +1,5 @@
 package ru.practicum.shareit.request;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +22,7 @@ public class ItemRequestController {
 
     @PostMapping
     public ResponseEntity<ItemRequestDtoResponse> create(
-            @Valid @RequestBody ItemRequestDtoRequest dto,
+            @RequestBody ItemRequestDtoRequest dto,
             @RequestHeader(Constants.HEADER_USER_ID) Long userId) {
 
         ItemRequestDtoResponse response = itemRequestService.create(dto, userId);

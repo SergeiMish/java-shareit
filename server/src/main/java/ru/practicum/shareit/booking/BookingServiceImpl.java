@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.mapper.BookingDtoMapper;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.exeption.*;
 import ru.practicum.shareit.item.ItemRepository;
@@ -96,6 +97,29 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return filterBookingsByState(bookings, state);
+    }
+    @Override
+    public BookingDto returnItem(Long userId, Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new BookingNotFoundException("Booking not found"));
+
+        if (!booking.getItem().getOwner().getId().equals(userId)) {
+            throw new AccessDeniedException("You are not allowed to return this item");
+        }
+
+        if (!booking.getStatus().equals(BookingStatus.CURRENT) ||
+                booking.getEnd().isAfter(LocalDateTime.now())) {
+            throw new IllegalStateException("Cannot return item in current status or time");
+        }
+
+        booking.setStatus(BookingStatus.PAST);
+
+        Item item = booking.getItem();
+        item.setAvailable(true);
+
+        bookingRepository.save(booking);
+
+        return BookingDtoMapper.toDto(booking);
     }
 
     private List<BookingDto> filterBookingsByState(List<Booking> bookings, String state) {
