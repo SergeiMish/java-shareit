@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.mapper.BookingDtoMapper;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.exeption.*;
 import ru.practicum.shareit.item.ItemRepository;
@@ -98,6 +97,7 @@ public class BookingServiceImpl implements BookingService {
 
         return filterBookingsByState(bookings, state);
     }
+
     @Override
     public BookingDto returnItem(Long userId, Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
