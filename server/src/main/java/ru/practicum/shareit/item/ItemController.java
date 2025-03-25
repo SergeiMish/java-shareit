@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +26,7 @@ public class ItemController {
     @PostMapping
     public ResponseEntity<ItemDto> addItem(
             @RequestHeader(Constants.HEADER_USER_ID) Long userId,
-            @Valid @RequestBody ItemDto itemDto) {
+            @RequestBody ItemDto itemDto) {
 
         ItemDto createdItem = itemService.addItem(userId, itemDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdItem);
